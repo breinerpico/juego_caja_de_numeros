@@ -1,0 +1,178 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>CANVAS Cajita de números</title>
+<style>
+body{
+	width:960px;
+	margin:0 auto;
+}
+h1{
+	text-align:center;
+}
+#miCanvas{
+	border:dotted 2px yellow;
+	background:green;	
+}
+</style>
+
+<script>
+/*************
+VARIABLES
+**************/
+var canvas,ctx;
+var inicioX = 280; // Línea 25 de la imagen "WhatsApp Image 2025-10-28 at 7.13.50 AM (2).jpeg"
+var inicioY = 50; // Línea 26
+var renglones = 4; // Línea 27
+var columnas = 4; // Línea 28
+var numFichas = renglones * columnas; // Línea 29. Se usa esta definición, que es la de canvasNumero02.html a canvasNumero06.html, en lugar de la de canvasNumero.html
+var ancho = 100; // Línea 30
+var b = 0; // Línea 31
+var fichas_array = new Array(); // Línea 32
+var colorFicha = "white"; // Línea 33
+var colorMarco = "black"; // Línea 34
+/*************
+OBJETOS
+**************/
+function Ficha(x,y, ren, col, w, i){ // Inicia línea 43 de la imagen "WhatsApp Image 2025-10-28 at 7.13.50 AM (2).jpeg"
+	this.x = x;
+	this.y = y;
+	this.w = w;
+	this.i = i;
+	this.ren = ren;
+	this.col = col;
+	this.dibuja = dibujaFicha;	// Línea 49
+}
+/************
+FUNCIONES
+*************/
+function dibujaFicha(){ // Inicia línea 51
+	ctx.save();
+	ctx.fillStyle = colorFicha;
+	ctx.strokeStyle = colorMarco;
+	ctx.fillRect(this.x, this.y, this.w, this.w);
+	ctx.strokeRect(this.x, this.y, this.w, this.w);
+	//
+	ctx.font = "bold 40px Comic";
+	ctx.fillStyle = colorMarco;
+	if(this.i<9){
+		ctx.fillText(this.i, this.x+this.w/2-10, this.y+this.w/2+10);
+	} else if(this.i==numFichas){ // numFichas es 16. La ficha 16 es la vacía (línea 65)
+		ctx.fillText("", this.x+this.w/2-10, this.y+this.w/2+10);
+	} else {
+		ctx.fillText(this.i, this.x+this.w/2-18, this.y+this.w/2+10);
+	}
+}
+function tablero(){ // Línea 74 (imagen "WhatsApp Image 2025-10-28 at 7.13.50 AM (3).jpeg")
+	var i,j;
+	for(i=0; i<renglones; i++){
+		for(j=0; j<columnas; j++){
+			x = inicioX + ancho * j;
+			y = inicioY + ancho * i
+			ii = j + i * renglones;	
+			fichas_array.push(new Ficha(x,y,i,j,ancho,ii+1));
+			fichas_array[ii].dibuja();
+		}
+	}
+}
+function barajea(){ // Línea 90
+	for(i=0; i<1000; i++){ // Línea 92
+		r = Math.floor(Math.random()*numFichas);
+		busca(r);	
+	}
+}
+function ajusta(xx, yy){ // Función que aparece en canvasNumero06.html
+	var pos = canvas.getBoundingClientRect();
+	var x = xx - pos.left;
+	var y = yy - pos.top;
+	return {x:x, y:y}	
+}
+function selecciona(e){ // Línea 102
+	var pos = ajusta(e.clientX, e.clientY);
+	var x = pos.x;
+	var y = pos.y;
+	var ficha;
+	//
+	for(var i=0; i<fichas_array.length; i++){
+		ficha = fichas_array[i];
+		if((x>ficha.x)&&
+		(x<ficha.x+ficha.w)&&
+		(y>ficha.y)&&
+		(y<ficha.y+ficha.w)){
+			break;	
+		}
+	}
+	if(i<fichas_array.length){
+		if(fichas_array[i].i != 16){ // numFichas es 16, la ficha vacía (imagen "WhatsApp Image 2025-10-28 at 7.13.51 AM (1).jpeg" - Línea 109)
+			busca(i);	
+		}
+	}
+}
+function busca(ficha){ // Línea 90 (imagen "WhatsApp Image 2025-10-28 at 7.13.51 AM.jpeg")
+	var ren2, col2;
+	var ren = fichas_array[ficha].ren;
+	var col = fichas_array[ficha].col;
+	var bandera = false;
+	
+	//arriba (Línea 96)
+	ren2 = ren - 1;
+	if(ren2 > -1) bandera = intercambia(ren, col, ren2, col); // Línea 97
+	
+	//abajo (Línea 99)
+	ren2 = ren + 1;
+	if(ren2 < renglones) bandera = intercambia(ren, col, ren2, col); // Línea 100
+	
+	//derecha (Línea 102)
+	col2 = col + 1;
+	if(col2 < columnas) bandera = intercambia(ren, col, ren, col2); // Línea 103
+	
+	//izquierda (Línea 105)
+	col2 = col - 1;	
+	if(col2 > -1) bandera = intercambia(ren, col, ren, col2); // Línea 106
+}
+function intercambia(ren, col, ren2, col2){ // Línea 110 (imagen "WhatsApp Image 2025-10-28 at 7.13.51 AM (1).jpeg")
+	var i = col + ren * renglones;
+	var j = col2 + ren2 * renglones;
+	var cambio = false;
+	//
+	if(fichas_array[j].i == numFichas){ // numFichas es 16 (Línea 117)
+		fichas_array[j].i = fichas_array[i].i;
+		fichas_array[i].i = numFichas; // 16
+		cambio = true;
+		tablero();
+		clic.play();
+	}
+	return cambio; // Línea 123
+}
+/****************
+INICIO
+*****************/
+window.onload = function(){ // Línea 86 (imagen "WhatsApp Image 2025-10-28 at 7.13.50 AM (3).jpeg")
+	canvas = document.getElementById("miCanvas");
+	if(canvas && canvas.getContext){
+		ctx = canvas.getContext("2d");
+		if(ctx){
+			clic = document.getElementById("clic"); // Línea 93 (imagen "WhatsApp Image 2025-10-28 at 7.13.50 AM (3).jpeg")
+			tablero();
+			barajea();
+			canvas.addEventListener("click",selecciona,false); // Línea 96
+		} else {
+			alert("Error al crear tu contexto");	
+		}
+	}
+}
+
+</script>
+</head>
+
+<body>
+<h1>CANVAS Cajita de Números</h1> <canvas id="miCanvas" width="960px" height="500px">
+Tu navegador no soporta CANVAS
+</canvas>
+<audio id="clic">
+<source src="sonidos/clic.mp3">
+<source src="sonidos/clic.ogg">
+</audio>
+</body>
+</html>

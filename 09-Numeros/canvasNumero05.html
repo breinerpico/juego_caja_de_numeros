@@ -1,0 +1,155 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>CANVAS Cajita de números</title>
+<style>
+body{
+	width:960px;
+	margin:0 auto;
+}
+h1{
+	text-align:center;
+}
+#miCanvas{
+	border:dotted 2px yellow;
+	background:green;	
+}
+</style>
+
+<script>
+/*************
+VARIABLES
+**************/
+var canvas,ctx;
+var inicioX = 280;
+var inicioY = 50;
+var renglones = 4;
+var columnas = 4;
+var numFichas = renglones * columnas;
+var ancho = 100;
+var b = 0;
+var fichas_array = new Array();
+var colorFicha = "white";
+var colorMarco = "black";
+/*************
+OBJETOS
+**************/
+function Ficha(x,y, ren, col, w, i){
+	this.x = x;
+	this.y = y;
+	this.w = w;
+	this.i = i;
+	this.ren = ren;
+	this.col = col;
+	this.dibuja = dibujaFicha;	
+}
+/************
+FUNCIONES
+*************/
+function dibujaFicha(){
+	ctx.save();
+	ctx.fillStyle = colorFicha;
+	ctx.strokeStyle = colorMarco;
+	ctx.fillRect(this.x, this.y, this.w, this.w);
+	ctx.strokeRect(this.x, this.y, this.w, this.w);
+	//
+	ctx.font = "bold 40px Comic";
+	ctx.fillStyle = colorMarco;
+	if(this.i<9){
+		ctx.fillText(this.i, this.x+this.w/2-10, this.y+this.w/2+10);
+	} else if(this.i==numFichas){
+		ctx.fillText("", this.x+this.w/2-10, this.y+this.w/2+10);
+	} else {
+		ctx.fillText(this.i, this.x+this.w/2-18, this.y+this.w/2+10);
+	}
+}
+function tablero(){
+	var i,j;
+	for(i=0; i<renglones; i++){
+		for(j=0; j<columnas; j++){
+			x = inicioX + ancho * j;
+			y = inicioY + ancho * i
+			ii = j + i * renglones;	
+			fichas_array.push(new Ficha(x,y,i,j,ancho,ii+1));
+			fichas_array[ii].dibuja();
+		}
+	}
+}
+function barajea(){
+	for(i=0; i<1000; i++){
+		r = Math.floor(Math.random()*numFichas);
+		busca(r);	
+	}
+}
+function selecciona(e){
+
+}
+function busca(ficha){
+	var ren2, col2;
+	var ren = fichas_array[ficha].ren;
+	var col = fichas_array[ficha].col;
+	var bandera = false;
+	//arriba
+	ren2 = ren - 1;
+	if(ren2 > -1) bandera = 
+	intercambia(ren, col, ren2, col);
+	//abajo
+	ren2 = ren + 1;
+	if(ren2 < renglones) bandera = 
+	intercambia(ren, col, ren2, col);
+	//derecha
+	col2 = col + 1;
+	if(col2 < columnas) bandera = 
+	intercambia(ren, col, ren, col2);
+	//izquierda
+	col2 = col - 1;	
+	if(col2 > -1) bandera = 
+	intercambia(ren, col, ren, col2);
+}
+function intercambia(ren, col, ren2, col2){
+	var i = col + ren * renglones;
+	var j = col2 + ren2 * renglones;
+	var cambio = false;
+	//
+	if(fichas_array[j].i == numFichas){
+		fichas_array[j].i = fichas_array[i].i;
+		fichas_array[i].i = numFichas;
+		cambio = true;
+		tablero();
+		clic.play();
+	}
+	return cambio;
+}
+/****************
+INICIO
+*****************/
+window.onload = function(){
+	canvas = document.getElementById("miCanvas");
+	if(canvas && canvas.getContext){
+		ctx = canvas.getContext("2d");
+		if(ctx){
+			clic = document.getElementById("clic");
+			tablero();
+			barajea();
+			canvas.addEventListener("click",selecciona,false);
+		} else {
+			alert("Error al crear tu contexto");	
+		}
+	}
+}
+
+</script>
+</head>
+
+<body>
+<h1>CANVAS Cajita de Números</h1>
+<canvas id="miCanvas" width="960px" height="500px">
+Tu navegador no soporta CANVAS
+</canvas>
+<audio id="clic">
+<source src="sonidos/clic.mp3">
+<source src="sonidos/clic.ogg">
+</audio>
+</body>
+</html>
